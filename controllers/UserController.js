@@ -1,6 +1,10 @@
 const knex = require("../database/connection");
 const User = require("../models/User");
 const PasswordToken = require("../models/PasswordToken");
+var bcrypt = require("bcrypt");
+var jwt = require("jsonwebtoken");
+
+var secret = "aquipalavrasecretaparageracaodotokenteste";
 
 class UserController {
 
@@ -123,6 +127,28 @@ class UserController {
         } else {
             res.status(406);
             res.send("Token inválido");
+        }
+    }
+
+    async longin(req, res){
+        var {email, password} = req.body;
+
+        var user = await User.findEmail(email);
+
+        if(user != null) {
+            if(await bcrypt.compare(password, user.password)){
+
+                var token = jwt.sign({email: user.email, role: user.role}, secret);
+
+                res.status(200);
+                res.json({token: token});
+            } else {
+                res.status(406);
+                res.send("Usuário/senha inválido.");
+            }
+        } else {
+            res.status(406);
+            res.send("Usuário/senha inválido.");
         }
     }
 }
