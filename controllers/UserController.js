@@ -1,5 +1,6 @@
 const knex = require("../database/connection");
 const User = require("../models/User");
+const PasswordToken = require("../models/PasswordToken");
 
 class UserController {
 
@@ -28,9 +29,9 @@ class UserController {
             return;
         }
 
-        var emailExiste = await User.findEmail(email);
+        var user = await User.findEmail(email);
 
-        if (emailExiste) {
+        if (user != undefined) {
             res.status(406);
             res.json({ err: "O e-mail já está cadastrado!" });
             return;
@@ -90,6 +91,38 @@ class UserController {
         } else {
             res.status(500);
             res.send("Ocorreu um erro no servidor.");
+        }
+    }
+
+    async recoverPassword(req, res){
+        var email = req.body.email;
+
+        var result = await PasswordToken.create(email);
+
+        if(result.status){
+            res.status(200);
+            res.send("{ \"token\": " + result.token +" }");
+
+        } else {
+            res.status(406);
+            res.send(result.err);
+        }
+    }
+
+    async changePassword(req, res){
+        var token = req.body.token;
+        var password = req.body.password;
+
+        var valid = await PasswordToken.validateToken(token);
+
+        if(valid.status){
+            await User.changePassword(password, valid.token.user_id, valid.token.token);
+            res.status(200);
+            res.send("Senha alterada com sucesso.");
+
+        } else {
+            res.status(406);
+            res.send("Token inválido");
         }
     }
 }

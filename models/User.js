@@ -1,5 +1,6 @@
 var knex = require("../database/connection");
 var bcrypt = require("bcrypt");
+const PasswordToken = require("./PasswordToken");
 
 class User {
 
@@ -14,7 +15,7 @@ class User {
             return await knex.select(["id", "email", "name", "role"]).table("users");
         } catch (error) {
             console.log(error)
-            return [];
+            return undefined;
         }
     }
 
@@ -23,23 +24,22 @@ class User {
             return await knex.select(["id", "email", "name", "role"]).table("users").where({ id: id });
         } catch (error) {
             console.log(error)
-            return [];
+            return undefined;
         }
     }
 
     async findEmail(email) {
         try {
-            var result = await knex.select("*").from("users").where({ email: email });
+            var result = await knex.select(["id", "email", "name", "role"]).from("users").where({ email: email });
 
-            if (result.length > 0) {
-                return true;
-            }
+            if(result.length > 0){
+                return result[0];
+            } 
 
-            return false;
-
+            return undefined;
         } catch (error) {
             console.log(error)
-            return false;
+            return undefined;
         }
     }
 
@@ -99,6 +99,14 @@ class User {
         }
     }
 
+    async changePassword(newPass, id, token){
+        var password = await bcrypt.hash(newPass, 10);
+
+        await knex.update({password: password}).where({id: id}).table("users");
+
+        await PasswordToken.setUsed(token);
+    }
+0
 }
 
 module.exports = new User();
