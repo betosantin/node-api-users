@@ -49,6 +49,49 @@ class UserController {
         res.send("OK")
     }
 
+    async edit(req, res){
+        var { id, email, name, role } = req.body;
+
+        var result = await User.update(id, email, name, role);
+
+        if (result != undefined) {
+            if (result.status) {
+                res.status(200);
+                res.send("OK");
+            } else {
+                res.status(406);
+                res.send(result.err);
+            }
+        } else {
+            res.status(500);
+            res.send("Ocorreu um erro no servidor.");
+        }
+    }
+
+    async delete(req, res){
+        var { id } = req.body;
+
+        if (id == undefined) {
+            res.status(400);
+            res.json({ err: "Informe um id." })
+            return;
+        }
+
+        var result = await User.delete(id);
+
+        if (result != undefined) {
+            if (result.status) {
+                res.status(200);
+                res.send("OK");
+            } else {
+                res.status(406);
+                res.send(result.err);
+            }
+        } else {
+            res.status(500);
+            res.send("Ocorreu um erro no servidor.");
+        }
+    }
 }
 
 module.exports = new UserController();

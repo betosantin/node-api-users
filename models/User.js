@@ -43,6 +43,62 @@ class User {
         }
     }
 
+    async update(id, email, name, role) {
+
+        var user = await this.findById(id);
+
+        if (user != undefined && user.length > 0) {
+            var editUser = {};
+
+            if (email != undefined) {
+                if (email != user.email) {
+                    if (!await this.findEmail(user.email)) {
+                        editUser.email = email;
+                    } else {
+                        return { status: false, err: "O e-mail já está cadastrado." }
+                    }
+                }
+            }
+
+            if (name != undefined) {
+                editUser.name = name;
+            }
+
+            if (role != undefined) {
+                editUser.role = role;
+            }
+
+            try {
+                await knex.update(editUser).where({ id: id }).table("users");
+
+                return { status: true };
+            } catch (err) {
+                return { status: false, err: "Ocorreu um erro ao atualizar usuário: " + err };
+            }
+        } else {
+            return { status: false, err: "O usuário não existe!" }
+        }
+
+    }
+
+    async delete(id) {
+
+        var user = await this.findById(id);
+
+        if (user != undefined && user.length > 0) {
+
+            try {
+                await knex.delete().where({ id: id }).table("users");
+
+                return { status: true };
+            } catch (err) {
+                return { status: false, err: "Ocorreu um erro ao deletar usuário: " + err };
+            }
+        } else {
+            return { status: false, err: "O usuário não existe!" }
+        }
+    }
+
 }
 
 module.exports = new User();
