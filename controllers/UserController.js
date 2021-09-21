@@ -4,7 +4,7 @@ const PasswordToken = require("../models/PasswordToken");
 var bcrypt = require("bcrypt");
 var jwt = require("jsonwebtoken");
 
-var secret = "aquipalavrasecretaparageracaodotokenteste";
+const secret = "aquipalavrasecretaparageracaodotokenteste";
 
 class UserController {
 
